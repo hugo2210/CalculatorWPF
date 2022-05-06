@@ -20,16 +20,161 @@ namespace Calculator
     /// </summary>
     public partial class MainWindow : Window
     {
+        double lastNumber, result;
+        SelectedOperator selectedOperator;
+
         public MainWindow()
         {
             InitializeComponent();
 
+            acButton.Click += AcButton_Click;
+            negativeButton.Click += NegativeButton_Click;
+            percentageButton.Click += PercentageButton_Click;
+            equalButton.Click += EqualButton_Click;
         }
 
-        private void sevenButton_Click(object sender, RoutedEventArgs e)
+        private void EqualButton_Click(object sender, RoutedEventArgs e)
         {
-            if(resultLabel.Content.ToString() == "0") resultLabel.Content = "7";
-            else resultLabel.Content = $"{resultLabel.Content}7";
+            double newNumber;
+            if (double.TryParse(resultLabel.Content.ToString(), out newNumber))
+            {
+                switch (selectedOperator)
+                {
+                    case SelectedOperator.Addition:
+                        result = SimpleMath.Add(lastNumber, newNumber);
+                        break;
+                    case SelectedOperator.Sustraction:
+                        result = SimpleMath.Sustraction(lastNumber, newNumber);
+                        break;
+                    case SelectedOperator.Division:
+                        result = SimpleMath.Divide(lastNumber, newNumber);
+                        break;
+                    case SelectedOperator.Multiplication:
+                        result = SimpleMath.Multiply(lastNumber, newNumber);
+                        break;
+                }
+
+                lastOperationLabel.Content = $"{lastOperationLabel.Content}{newNumber} = ";
+                resultLabel.Content = result.ToString();
+                lastNumber = int.Parse(resultLabel.Content.ToString());
+                Console.WriteLine();
+            }
+        }
+
+        private void PercentageButton_Click(object sender, RoutedEventArgs e)
+        {
+            double tempNumber;
+
+            if (double.TryParse(resultLabel.Content.ToString(), out tempNumber))
+            {
+                tempNumber = tempNumber / 100;
+                if (lastNumber != 0) tempNumber *= lastNumber;
+                resultLabel.Content = tempNumber.ToString();
+            }
+        }
+
+        private void NegativeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (double.TryParse(resultLabel.Content.ToString(), out lastNumber)) 
+            {
+                lastNumber = lastNumber * -1;
+                resultLabel.Content = lastNumber.ToString();
+            }
+        }
+
+        private void AcButton_Click(object sender, RoutedEventArgs e)
+        {
+            resultLabel.Content = "0";
+            result = 0;
+            lastNumber = 0;
+            lastOperationLabel.Content = "0";
+            lastOperationLabel.Visibility = Visibility.Hidden;
+        }
+
+        private void OperationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (double.TryParse(resultLabel.Content.ToString(), out lastNumber)) resultLabel.Content = "0";
+
+            if (sender == multiplicationButton) 
+            {
+                selectedOperator = SelectedOperator.Multiplication;
+                lastOperationLabel.Visibility = Visibility.Visible;
+                lastOperationLabel.Content = lastNumber + " * ";
+            }
+            if (sender == divisionButton)
+            {
+                selectedOperator = SelectedOperator.Division;
+                lastOperationLabel.Visibility = Visibility.Visible;
+                lastOperationLabel.Content = lastNumber + " / ";
+            }
+            if (sender == plusButton)
+            { 
+                selectedOperator = SelectedOperator.Addition;
+                lastOperationLabel.Visibility = Visibility.Visible;
+                lastOperationLabel.Content = lastNumber + " + ";
+            }
+            if (sender == substractionButton)
+            {
+                selectedOperator = SelectedOperator.Sustraction;
+                lastOperationLabel.Visibility = Visibility.Visible;
+                lastOperationLabel.Content = lastNumber + " - ";
+            }
+ 
+        }
+
+        private void dotButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (resultLabel.Content.ToString().Contains("."))
+            {
+                //Do nothing
+            }
+            else resultLabel.Content = $"{resultLabel.Content}.";
+        }
+
+        private void NumberButton_Click(object sender, RoutedEventArgs e)
+        {
+            int selectedValue = int.Parse((sender as Button).Content.ToString());       
+
+            if(resultLabel.Content.ToString() == "0") resultLabel.Content = $"{selectedValue}";
+            else resultLabel.Content = $"{resultLabel.Content}{selectedValue}";
+        }
+
+        
+
+       
+    }
+
+    public enum SelectedOperator
+    {
+        Addition,
+        Sustraction,
+        Multiplication,
+        Division
+    }
+
+    public class SimpleMath
+    {
+        public static double Add(double n1, double n2)
+        {
+            return n1 + n2;
+        }
+        public static double Sustraction(double n1, double n2)
+        {
+            return n1 - n2;
+        }
+        public static double Multiply(double n1, double n2)
+        {
+            return n1 * n2;
+        }
+        public static double Divide(double n1, double n2)
+        {
+            if (n2 == 0)
+            {
+                MessageBox.Show("Division by 0 is not supported", "Wrong operation",MessageBoxButton.OK, MessageBoxImage.Error);
+                return 0;
+            }
+
+            return n1 / n2;
         }
     }
 }
